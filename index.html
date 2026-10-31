@@ -1,0 +1,533 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Escape Lab Artbildung</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#06141b; --bg2:#0b2230; --card:rgba(16,42,56,.78); --card2:rgba(22,58,76,.9);
+  --line:rgba(120,220,230,.22); --text:#e6f4f1; --muted:#9dbcc0; --acc:#4ade80; --acc2:#22d3ee;
+  --warn:#fbbf24; --bad:#f87171; --vac:#a855f7; --wall:#a3824a;
+  --head:'Space Grotesk',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,Consolas,monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:radial-gradient(1200px 700px at 15% -10%,#123b4a 0%,transparent 60%),radial-gradient(900px 600px at 110% 20%,#1d1b4a 0%,transparent 55%),var(--bg);
+  color:var(--text);font-family:var(--head);font-size:17px;line-height:1.5;min-height:100vh}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;
+  background-image:linear-gradient(rgba(120,220,230,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(120,220,230,.04) 1px,transparent 1px);background-size:32px 32px}
+button{font:inherit;cursor:pointer}
+a{color:var(--acc2)}
+.wrap{max-width:1100px;margin:0 auto;padding:16px}
+/* HUD */
+.hud{position:sticky;top:0;z-index:20;background:rgba(6,20,27,.88);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.hud .wrap{display:flex;gap:16px;align-items:center;flex-wrap:wrap;padding-top:10px;padding-bottom:10px}
+.brand{font-weight:700;letter-spacing:.06em;font-size:15px;color:var(--acc2);text-transform:uppercase}
+.brand b{color:var(--acc)}
+.timer{font-family:var(--mono);font-size:22px;font-weight:700;padding:4px 12px;border:1px solid var(--line);border-radius:10px;background:rgba(0,0,0,.25)}
+.timer.low{color:var(--warn);border-color:var(--warn)}
+.timer.over{color:var(--bad);border-color:var(--bad);animation:pulse 1s infinite}
+.slots{display:flex;gap:4px;flex-wrap:wrap}
+.slot{width:28px;height:34px;border:1px solid var(--line);border-radius:6px;display:grid;place-items:center;font-family:var(--mono);font-weight:700;color:var(--muted);background:rgba(0,0,0,.25)}
+.slot.got{color:#062016;background:var(--acc);border-color:var(--acc);box-shadow:0 0 12px rgba(74,222,128,.5)}
+.hud .sp{flex:1}
+.mini{font-size:13px;color:var(--muted)}
+/* generic */
+h1,h2,h3{line-height:1.2;margin:.2em 0 .5em}
+h1{font-size:clamp(28px,5vw,48px)}
+h2{font-size:26px}
+h3{font-size:19px;color:var(--acc2)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px;margin:16px 0;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+.story{border-left:4px solid var(--acc2);background:linear-gradient(90deg,rgba(34,211,238,.12),transparent);padding:14px 18px;border-radius:0 12px 12px 0;font-style:italic}
+.btn{background:linear-gradient(135deg,#22c55e,#14b8a6);color:#04150f;border:0;border-radius:12px;padding:12px 20px;font-weight:700;letter-spacing:.02em;box-shadow:0 6px 18px rgba(34,197,94,.3);transition:transform .1s}
+.btn:hover{transform:translateY(-1px)}
+.btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
+.btn.ghost{background:transparent;color:var(--text);border:1px solid var(--line);box-shadow:none}
+.btn.hint{background:transparent;color:var(--warn);border:1px solid rgba(251,191,36,.5);box-shadow:none}
+.btn.small{padding:7px 12px;font-size:14px;border-radius:9px}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.tag{display:inline-block;font-size:12px;font-weight:700;padding:3px 9px;border-radius:99px;border:1px solid var(--line);margin-right:6px;letter-spacing:.04em}
+.afb1{color:#86efac;border-color:#86efac66}.afb2{color:#67e8f9;border-color:#67e8f966}.afb3{color:#f0abfc;border-color:#f0abfc66}
+.muted{color:var(--muted)}
+select,input[type=text],input[type=password],textarea{font:inherit;color:var(--text);background:rgba(0,0,0,.35);border:1px solid var(--line);border-radius:10px;padding:8px 10px;max-width:100%}
+select:focus,input:focus,textarea:focus{outline:2px solid var(--acc2);outline-offset:1px}
+textarea{width:100%;min-height:110px;resize:vertical}
+/* start */
+.hero{text-align:center;padding:40px 0 10px}
+.hero .glow{font-family:var(--mono);color:var(--acc);letter-spacing:.3em;font-size:14px}
+.hero h1{background:linear-gradient(90deg,#4ade80,#22d3ee,#a855f7);-webkit-background-clip:text;background-clip:text;color:transparent}
+.alarm{display:inline-block;padding:6px 14px;border-radius:99px;background:rgba(248,113,113,.15);border:1px solid rgba(248,113,113,.5);color:#fecaca;font-weight:700;animation:pulse 1.6s infinite}
+@keyframes pulse{50%{opacity:.55}}
+/* map */
+.sector{margin-top:22px}
+.sector-h{display:flex;align-items:center;gap:10px}
+.sector-h .dot{width:12px;height:12px;border-radius:50%;background:var(--acc2);box-shadow:0 0 10px var(--acc2)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px}
+.tile{position:relative;text-align:left;background:var(--card2);border:1px solid var(--line);border-radius:14px;padding:14px;color:var(--text);min-height:118px;transition:transform .15s,border-color .15s}
+.tile:hover:not(:disabled){transform:translateY(-3px);border-color:var(--acc2)}
+.tile .no{font-family:var(--mono);font-size:12px;color:var(--muted)}
+.tile .t{font-weight:700;font-size:17px;margin:4px 0}
+.tile .st{position:absolute;right:12px;top:10px;font-size:20px}
+.tile.locked{opacity:.45;filter:grayscale(.7)}
+.tile.done{border-color:rgba(74,222,128,.6);background:linear-gradient(160deg,rgba(74,222,128,.18),var(--card2))}
+.tile.next{border-color:var(--acc2);box-shadow:0 0 0 2px rgba(34,211,238,.25),0 0 22px rgba(34,211,238,.25)}
+.progress{height:10px;border-radius:99px;background:rgba(0,0,0,.35);overflow:hidden;border:1px solid var(--line)}
+.progress>div{height:100%;background:linear-gradient(90deg,var(--acc),var(--acc2));transition:width .6s}
+/* room */
+.room-h{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:flex-start}
+details.mat{background:rgba(255,255,255,.04);border:1px solid rgba(250,204,21,.35);border-radius:14px;padding:4px 18px;margin:16px 0}
+details.mat summary{cursor:pointer;font-weight:700;color:#fde68a;padding:10px 0}
+details.mat p{margin:.5em 0}
+.mat .defs dt{font-weight:700;color:#fde68a}.mat .defs dd{margin:0 0 8px 0}
+.task{margin:18px 0}
+.task>.q{font-weight:700;margin-bottom:8px}
+.op{color:var(--acc2);font-weight:700}
+.pair{display:grid;grid-template-columns:minmax(150px,240px) 1fr;gap:10px;align-items:center;padding:6px 0;border-bottom:1px dashed var(--line)}
+.deflist{display:grid;gap:6px}
+.deflist div{padding:8px 12px;background:rgba(0,0,0,.2);border-radius:10px}
+.deflist b{font-family:var(--mono);color:var(--acc);margin-right:8px}
+.tf{display:grid;grid-template-columns:28px 1fr auto;gap:10px;align-items:center;padding:8px 0;border-bottom:1px dashed var(--line)}
+.tf .n{font-family:var(--mono);color:var(--muted)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.seg button{background:transparent;color:var(--text);border:0;padding:7px 12px;font-weight:700}
+.seg button.on{background:var(--acc2);color:#04151a}
+.seg button+button{border-left:1px solid var(--line)}
+.scen{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}
+.scen .card{margin:0;padding:14px}
+.radios label{display:block;padding:6px 8px;border-radius:8px;cursor:pointer}
+.radios label:hover{background:rgba(255,255,255,.05)}
+.chainpool,.chain{display:flex;flex-direction:column;gap:8px}
+.chip{text-align:left;background:rgba(0,0,0,.25);border:1px solid var(--line);color:var(--text);border-radius:10px;padding:10px 12px}
+.chip:hover{border-color:var(--acc2)}
+.chain .chip{border-color:rgba(74,222,128,.5);background:rgba(74,222,128,.08)}
+.chain .chip::before{content:attr(data-n);font-family:var(--mono);color:var(--acc);margin-right:10px;font-weight:700}
+.chain-empty{border:1px dashed var(--line);border-radius:10px;padding:14px;color:var(--muted);text-align:center}
+.order li{display:flex;align-items:center;gap:8px;background:rgba(0,0,0,.25);border:1px solid var(--line);border-radius:10px;padding:8px 10px;margin:6px 0}
+.order li span{flex:1}
+.order{list-style:none;padding:0;margin:0;counter-reset:o}
+.order li::before{counter-increment:o;content:counter(o);font-family:var(--mono);color:var(--acc);font-weight:700;width:20px}
+.arrow{background:rgba(255,255,255,.06);border:1px solid var(--line);color:var(--text);border-radius:8px;width:34px;height:30px}
+.lab{border:1px solid rgba(240,171,252,.4);background:rgba(240,171,252,.06);border-radius:14px;padding:14px 16px;margin:16px 0}
+.lab h4{margin:0 0 6px;color:#f5d0fe}
+.model{margin-top:10px;padding:12px 14px;border-radius:10px;background:rgba(74,222,128,.08);border:1px solid rgba(74,222,128,.4)}
+.feedback{min-height:24px;margin-top:10px;font-weight:700}
+.feedback.bad{color:var(--bad)}.feedback.ok{color:var(--acc)}
+.hintbox{margin-top:10px;padding:10px 14px;border-radius:10px;background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.4);color:#fde68a}
+.door{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:18px;padding-top:16px;border-top:1px solid var(--line)}
+.shake{animation:shake .4s}
+@keyframes shake{20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+.svgbox{background:rgba(0,0,0,.25);border:1px solid var(--line);border-radius:12px;padding:8px}
+.svgbox svg{width:100%;height:auto;display:block}
+.cells3{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.cap{font-size:14px;color:var(--muted);text-align:center;margin-top:4px}
+table.data{border-collapse:collapse;margin:8px 0;font-family:var(--mono);font-size:15px}
+table.data th,table.data td{border:1px solid var(--line);padding:6px 12px;text-align:center}
+table.data th{background:rgba(34,211,238,.12)}
+/* svg cell animation */
+.pp,.vac{transition:x 2.2s ease,y 2.2s ease,width 2.2s ease,height 2.2s ease,rx 2.2s ease,ry 2.2s ease,fill-opacity 2.2s ease}
+.nuc{transition:transform 2.2s ease}
+.liq{transition:y 2s ease,height 2s ease}
+/* modal */
+.modal{position:fixed;inset:0;background:rgba(2,8,12,.75);display:grid;place-items:center;z-index:50;padding:16px}
+.modal .box{max-width:560px;width:100%;background:linear-gradient(160deg,#10324a,#0b1f2c);border:1px solid var(--acc);border-radius:20px;padding:26px;text-align:center;box-shadow:0 0 50px rgba(74,222,128,.35);animation:pop .35s}
+@keyframes pop{from{transform:scale(.85);opacity:0}}
+.bigletter{font-family:var(--mono);font-size:64px;font-weight:700;color:var(--acc);text-shadow:0 0 24px rgba(74,222,128,.7);margin:8px 0}
+.merke{text-align:left;background:rgba(255,255,255,.05);border-radius:12px;padding:12px 14px;margin:14px 0;font-size:15px}
+.merke b{color:var(--acc2)}
+canvas{width:100%;display:block;border-radius:10px;background:#071a22;border:1px solid var(--line)}
+.simctl{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-top:8px;font-size:15px}
+input[type=range]{accent-color:var(--acc2)}
+.cert{text-align:center}
+.cert .seal{font-size:64px}
+#print{display:none}
+@media (max-width:640px){
+  body{font-size:16px}
+  .pair{grid-template-columns:1fr}
+  .timer{font-size:18px}
+  .slot{width:22px;height:28px;font-size:13px}
+}
+@media print{
+  body{background:#fff;color:#000}
+  body::before,.hud,#app,.modal{display:none!important}
+  #print{display:block;font-family:Cambria,Georgia,serif;color:#000;padding:10mm}
+  #print h1,#print h2{color:#1F3864}
+  #print .pbox{border:1px solid #999;border-radius:6px;padding:8px 12px;margin:8px 0;white-space:pre-wrap}
+}
+</style>
+</head>
+<body>
+<div class="hud" id="hud" hidden>
+  <div class="wrap">
+    <div class="brand">Escape&nbsp;Lab <b>Artbildung</b></div>
+    <div class="timer" id="timer" title="Restzeit bis zum Ausfall der Notstromversorgung">30:00</div>
+    <div class="slots" id="slots"></div>
+    <div class="sp"></div>
+    <div class="mini" id="team"></div>
+    <button class="btn ghost small" id="mapbtn">Stationskarte</button>
+  </div>
+</div>
+<div id="app"></div>
+<div id="print"></div>
+
+<script>
+"use strict";
+/* ---------- Grunddaten ---------- */
+const KEY = 'escape-lab-artbildung-v1';
+const TOTAL_MIN = 30;
+const HINT_PENALTY_MIN = 1;
+function h(s){let x=5381;for(const c of s){x=((x<<5)+x+c.codePointAt(0))|0}return x>>>0}
+const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const $ = (sel,root=document)=>root.querySelector(sel);
+const $$ = (sel,root=document)=>[...root.querySelectorAll(sel)];
+const normNum = v => {const n=parseFloat(String(v).replace(',','.').replace(/[^0-9.\-]/g,''));return isNaN(n)?'x':n.toFixed(2)};
+const normTxt = v => String(v).trim().toLowerCase().replace(/\s+/g,' ');
+
+function fresh(){return {unlocked:false,team:'',started:null,finished:null,solved:{},hints:{},notes:{},compared:{},fails:{},lockUntil:{},view:'start',room:null,ui:{}}}
+let S = fresh();
+try{const raw=localStorage.getItem(KEY);if(raw){S=Object.assign(fresh(),JSON.parse(raw))}}catch(e){}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+
+/* ---------- Laborbuch ---------- */
+function labHTML(entry){
+  const txt=S.notes[entry.id]||'';const done=S.compared[entry.id];
+  return `<div class="lab" data-lab="${entry.id}">
+    <h4>📓 Laborbuch-Eintrag <span class="tag afb${entry.afb}">AFB ${['','I','II','III'][entry.afb]}</span></h4>
+    <div>${entry.prompt}</div>
+    <textarea placeholder="Schreibe hier in ganzen Sätzen …" data-note="${entry.id}">${esc(txt)}</textarea>
+    <div class="row" style="margin-top:6px"><span class="mini" data-count="${entry.id}"></span><span class="sp" style="flex:1"></span>
+    <button class="btn ghost small" data-compare="${entry.id}">Mit Musterlösung vergleichen</button></div>
+    <div class="model" data-model="${entry.id}" ${done?'':'hidden'}><b>Musterlösung:</b> ${entry.model}
+      <div class="mini" style="margin-top:6px">Vergleiche: Was fehlt in deinem Eintrag? Ergänze es mit einer anderen Farbe oder hier im Feld.</div></div>
+  </div>`;
+}
+const MINCH=80;
+function wireLab(root){
+  $$('textarea[data-note]',root).forEach(t=>{
+    const id=t.dataset.note;const cnt=$(`[data-count="${id}"]`,root);const b=$(`[data-compare="${id}"]`,root);
+    const upd=()=>{const n=t.value.trim().length;cnt.textContent=n<MINCH?`noch ${MINCH-n} Zeichen bis zum Vergleich`:'✓ genug geschrieben';b.disabled=n<MINCH;};
+    t.addEventListener('input',()=>{S.notes[id]=t.value;save();upd()});upd();
+    b.addEventListener('click',()=>{S.compared[id]=true;save();$(`[data-model="${id}"]`,root).hidden=false});
+  });
+}
+
+/* ---------- Räume ---------- */
+let simStop=null;
+const popSVG=k=>{
+  const e=(cx,c,rx=45)=>`<ellipse cx="${cx}" cy="48" rx="${rx}" ry="28" fill="${c}" fill-opacity=".8" stroke="#e6f4f1" stroke-width="1.5"/>`;
+  const bar='<rect x="104" y="6" width="12" height="84" fill="#38bdf8" fill-opacity=".7"/><text x="110" y="104" text-anchor="middle" font-size="10" fill="#9dbcc0">Meer</text>';
+  const b=k===1?e(110,'#4ade80',80):k===2?e(58,'#4ade80')+e(162,'#4ade80')+bar:e(58,'#fb923c')+e(162,'#a855f7')+bar;
+  return `<svg viewBox="0 0 220 110" role="img" aria-label="Schema zur allopatrischen Artbildung">${b}</svg>`;
+};
+const radios=(name,opts)=>`<div class="radios">${opts.map(([v,t])=>`<label><input type="radio" name="${name}" value="${v}"> ${t}</label>`).join('')}</div>`;
+const rad=(root,name)=>(($(`input[name=${name}]:checked`,root)||{}).value||'-');
+const ROOMS = [
+{ id:'s1', title:'Station 1: Begriffsscanner', afb:[1], mins:4, letter:'L',
+  story:'Die Eingangsschleuse der Station reagiert nur auf korrekte Fachsprache. Der Scanner zeigt sechs Begriffe und sechs Definitionen, doch die Zuordnung wurde gelöscht.',
+  body:()=>{
+    const defs={A:'Gruppe von Populationen mit gemeinsamem Genpool, innerhalb dessen Genfluss stattfindet; von anderen solchen Gruppen genetisch getrennt.',
+      B:'Artbildung ohne räumliche Trennung: Teilpopulationen im selben Gebiet entwickeln getrennte Genpools, z. B. durch Spezialisierung auf unterschiedliche Ressourcen.',
+      C:'Rasche Auffächerung einer Stammart in viele neue Arten, die unterschiedliche ökologische Nischen besetzen.',
+      D:'Alle Mechanismen, die den Genfluss zwischen Populationen verhindern, weil sich Individuen nicht oder nicht erfolgreich miteinander fortpflanzen.',
+      E:'Artbildung, bei der eine Population durch eine geografische Barriere in Teilpopulationen getrennt wird.',
+      F:'Gruppe von Individuen, die sich untereinander fortpflanzen und fruchtbare Nachkommen hervorbringen können und von anderen solchen Gruppen reproduktiv isoliert ist.'};
+    const terms=['allopatrische Artbildung','sympatrische Artbildung','adaptive Radiation','biologischer Artbegriff','populationsgenetischer Artbegriff','reproduktive Isolation'];
+    return `<div class="task"><div class="q"><span class="op">Ordne zu:</span> Wähle für jeden Begriff die passende Definition (A–F).</div>
+      <div class="deflist">${Object.entries(defs).map(([k,v])=>`<div><b>${k}</b>${v}</div>`).join('')}</div>
+      <div style="margin-top:12px">${terms.map((t,i)=>`<div class="pair"><b>${t}</b><select data-k="${i}"><option value="">–</option>${Object.keys(defs).map(k=>`<option>${k}</option>`).join('')}</select></div>`).join('')}</div></div>`;
+  },
+  check:root=>[$$('select[data-k]',root).map(s=>s.value).join('')],
+  parts:['Zuordnung'],
+  hints:['Beginne mit den Begriffen, die du sicher kennst. „Allo“ bedeutet „anders“, „sym“ bedeutet „zusammen“: Es geht um den Ort der Artbildung.','Die beiden Artbegriffe unterscheiden sich im Blickwinkel: Der eine fragt nach fruchtbaren Nachkommen, der andere nach dem gemeinsamen Genpool und dem Genfluss.'],
+  merke:'<b>Allopatrisch</b>: Artbildung nach räumlicher Trennung. <b>Sympatrisch</b>: Artbildung im selben Gebiet. <b>Biologischer Artbegriff</b>: Fortpflanzungsgemeinschaft mit fruchtbaren Nachkommen. <b>Populationsgenetischer Artbegriff</b>: gemeinsamer Genpool mit Genfluss, getrennt von anderen Arten.'
+},
+{ id:'s2', title:'Station 2: Inselrouten', afb:[1,2], mins:5, letter:'N',
+  story:'Die Schleuse zur Datenzentrale zeigt ein Fenster mit durcheinandergeratenen Protokollschritten zur Artbildung auf den Inseln. Lest zuerst M1 und bringt die Schritte dann in die richtige Reihenfolge.',
+  material:`<details class="mat" open><summary>📄 M1 · Allopatrische Artbildung</summary>
+    <p>Von <b>allopatrischer Artbildung</b> spricht man, wenn eine Population durch eine <b>geografische Barriere</b> (z. B. Meer, Gebirge, Fluss, Wüste) in <b>Teilpopulationen</b> getrennt wird. Zwischen den Teilpopulationen findet kein <b>Genfluss</b> mehr statt, ihre Genpools entwickeln sich unabhängig voneinander.</p>
+    <p>In jeder Teilpopulation verändern <b>Mutation</b>, <b>Rekombination</b>, <b>Gendrift</b> und <b>Selektion</b> unter den jeweils herrschenden Umweltbedingungen die Allelhäufigkeiten. Die Teilpopulationen unterscheiden sich dadurch zunehmend und bilden zunächst <b>Unterarten</b> (Rassen). Kommt es durch die Auseinanderentwicklung zu <b>reproduktiver Isolation</b>, sind <b>neue Arten</b> entstanden. Das gilt auch dann, wenn die Barriere später wegfällt und die Gruppen wieder aufeinandertreffen.</p>
+    <div class="cells3">${[1,2,3].map(k=>`<div><div class="svgbox">${popSVG(k)}</div><div class="cap">${['① Ausgangspopulation','② Barriere trennt die Teilpopulationen','③ getrennte Genpools entwickeln sich weiter'][k-1]}</div></div>`).join('')}</div>
+  </details>`,
+  steps:{s1:'Eine Ausgangspopulation wird durch eine geografische Barriere (z. B. Meer) in Teilpopulationen getrennt.',s2:'Zwischen den Teilpopulationen findet kein Genfluss mehr statt.',s3:'Mutation, Rekombination, Gendrift und unterschiedliche Selektion verändern die Allelhäufigkeiten in den getrennten Genpools.',s4:'Die Teilpopulationen unterscheiden sich zunehmend und bilden Unterarten (Rassen).',s5:'Es hat sich reproduktive Isolation entwickelt: Bei erneutem Zusammentreffen kommt es nicht mehr zum Genfluss, es sind neue Arten entstanden.'},
+  body:()=>`<div class="task"><div class="q"><span class="op">Ordne</span> die Schritte der allopatrischen Artbildung in die richtige Reihenfolge (Pfeile benutzen).</div><ol class="order" id="ord"></ol></div>
+    <div class="task"><div class="q"><span class="op">Entscheide</span>, ab wann man von zwei verschiedenen Arten sprechen kann.</div>
+    ${radios('t2',[['a','Sobald sich die Teilpopulationen äußerlich deutlich unterscheiden.'],['b','Sobald eine geografische Barriere die Population trennt.'],['c','Sobald reproduktive Isolation besteht, die auch bei erneutem Zusammentreffen den Genfluss verhindert.']])}</div>`,
+  init:root=>{
+    const st=ROOMS.find(r=>r.id==='s2').steps;S.ui.ord=S.ui.ord||['s3','s1','s5','s2','s4'];
+    const draw=()=>{const o=$('#ord',root);o.innerHTML=S.ui.ord.map((k,i)=>`<li><span>${st[k]}</span><button class="arrow" data-u="${i}" aria-label="nach oben">▲</button><button class="arrow" data-d="${i}" aria-label="nach unten">▼</button></li>`).join('');
+      $$('[data-u]',o).forEach(b=>b.onclick=()=>{const i=+b.dataset.u;if(i>0){[S.ui.ord[i-1],S.ui.ord[i]]=[S.ui.ord[i],S.ui.ord[i-1]];save();draw()}});
+      $$('[data-d]',o).forEach(b=>b.onclick=()=>{const i=+b.dataset.d;if(i<4){[S.ui.ord[i+1],S.ui.ord[i]]=[S.ui.ord[i],S.ui.ord[i+1]];save();draw()}});};
+    draw();
+  },
+  check:root=>[S.ui.ord.join(','),rad(root,'t2')],
+  parts:['Reihenfolge','Artkriterium'],
+  hints:['Ursache → Folge für den Genfluss → Veränderung der Genpools → sichtbare Unterschiede → Artstatus. Ohne Barriere beginnt nichts.','Unterarten können sich oft noch kreuzen. Eine neue Art liegt erst vor, wenn der Genfluss auch ohne Barriere dauerhaft unterbunden ist.'],
+  merke:'<b>Allopatrische Artbildung</b>: Trennung durch eine Barriere → kein Genfluss → getrennte Entwicklung der Genpools → Unterarten → bei reproduktiver Isolation <b>neue Arten</b>.'
+},
+{ id:'s3', title:'Station 3: Gleicher See, neue Arten?', afb:[2], mins:5, letter:'S',
+  story:'Im Archiv der Station liegen vier Fallakten. Der Computer verlangt für jede Akte die Einordnung. Lest M2 und wertet die Fälle aus.',
+  material:`<details class="mat" open><summary>📄 M2 · Sympatrische Artbildung</summary>
+    <p>Bei der <b>sympatrischen Artbildung</b> entstehen neue Arten <b>ohne räumliche Trennung</b> im selben Verbreitungsgebiet. Voraussetzung ist, dass sich innerhalb einer Population Gruppen herausbilden, zwischen denen kaum noch Genfluss stattfindet. Das kann z. B. durch Spezialisierung auf unterschiedliche Ressourcen (<b>disruptive Selektion</b>) geschehen und dadurch, dass sich Individuen bevorzugt mit Partnern der eigenen Gruppe paaren. Bei Pflanzen kann auch eine <b>Polyploidisierung</b> (Vervielfachung des Chromosomensatzes) in einer einzigen Generation zu reproduktiver Isolation führen.</p>
+    <p><b>Beispiel Apfelfliege:</b> Die Fliegen legten ihre Eier ursprünglich nur in Früchte des Weißdorns. Seit etwa 1860 gibt es in Nordamerika auch Fliegen, die Äpfel nutzen. Äpfel reifen früher als Weißdornfrüchte. Die Fliegen paaren sich auf der Frucht, auf der sie selbst geschlüpft sind. So sind die beiden Gruppen im selben Gebiet weitgehend genetisch getrennt.</p>
+    <p><b>Beispiel Buntbarsche:</b> Im Kratersee Apoyo (Nicaragua) leben Buntbarsche, die vor weniger als 25 000 Jahren in den abgeschlossenen See gelangten. Neben einer bodennah lebenden Form gibt es dort eine schlankere Form des freien Wassers. Beide paaren sich bevorzugt mit Partnern ähnlicher Körperform.</p>
+  </details>`,
+  body:()=>{
+    const cs=[
+      'Apfelfliegen-Rassen: Fliegen, die sich auf Äpfeln fortpflanzen, und Fliegen, die sich auf Weißdorn fortpflanzen, leben im selben Gebiet.',
+      'Zwei Ziesel-Arten leben auf der Süd- bzw. Nordseite des Grand Canyon. Der Canyon ist für sie unüberwindbar.',
+      'Bonobos leben südlich, Schimpansen nördlich des Kongo-Flusses. Nach einer verbreiteten Hypothese trennte der Fluss ihre gemeinsamen Vorfahren.',
+      'Buntbarsche im Kratersee Apoyo: Zwei Körperformen leben im selben See und paaren sich bevorzugt innerhalb der eigenen Form.'];
+    return `<div class="task"><div class="q">a) <span class="op">Ordne</span> jeden Fall der allopatrischen oder der sympatrischen Artbildung zu.</div>
+      ${cs.map((c,i)=>`<div class="pair" style="grid-template-columns:1fr 190px"><span><b>Fall ${i+1}:</b> ${c}</span><select data-c="${i}"><option value="">–</option><option value="a">allopatrisch</option><option value="s">sympatrisch</option></select></div>`).join('')}</div>
+      <div class="task"><div class="q">b) <span class="op">Erkläre</span>, wie sympatrische Artbildung ohne räumliche Barriere möglich ist.</div>
+      ${radios('t3',[['a','Eine geografische Barriere ist zwingend nötig, sonst kann es keine Artbildung geben.'],['b','Disruptive Selektion (z. B. an unterschiedlichen Nahrungsquellen oder Wirtspflanzen) und bevorzugte Paarung innerhalb der eigenen Gruppe verringern den Genfluss trotz gemeinsamen Lebensraums.'],['c','Alle Individuen müssen gleichzeitig in genau demselben Gen mutieren.']])}</div>`;
+  },
+  check:root=>[$$('select[data-c]',root).map(s=>s.value).join(''),rad(root,'t3')],
+  parts:['Teil a','Teil b'],
+  hints:['Prüfe bei jedem Fall: Gibt es eine räumliche Trennung durch Meer, Fluss oder Gebirge, oder leben beide Gruppen im selben Gebiet?','Bei sympatrischer Artbildung wird der Genfluss nicht durch Raum, sondern durch ökologische Unterschiede und das Paarungsverhalten verringert.'],
+  merke:'<b>Sympatrische Artbildung</b> läuft im selben Gebiet ab. Der Genfluss wird durch <b>ökologische Spezialisierung</b> (disruptive Selektion), <b>Paarungspräferenzen</b> oder bei Pflanzen durch <b>Polyploidisierung</b> eingeschränkt.'
+},
+{ id:'s4', title:'Station 4: Isolations-Tresor', afb:[1,2], mins:5, letter:'E',
+  story:'Der Tresor mit den Zugangsdaten öffnet sich nur, wenn jedes Beispiel dem richtigen Isolationsmechanismus zugeordnet ist. Danach müsst ihr noch sagen, welche Mechanismen schon vor der Zygotenbildung wirken.',
+  body:()=>{
+    const mech=[['hab','Habitatisolation'],['inv','Hybridsterblichkeit'],['ster','Hybridsterilität'],['zus','Hybridzusammenbruch'],['mech','mechanische Isolation'],['verh','Verhaltensisolation'],['zeit','zeitliche Isolation']];
+    const ex=['Zwei Schneckenpopulationen: Die Gehäuse der einen sind rechts-, die der anderen linksgewunden. Bei einer Paarung passen die Geschlechtsöffnungen nicht aufeinander.',
+      'Aus der Kreuzung von Pferdestute und Eselhengst geht ein gesundes, kräftiges Maultier hervor, das aber keine funktionsfähigen Keimzellen bildet.',
+      'Zwei Schlangenarten leben im selben Gebiet. Die eine jagt fast nur im Wasser, die andere am Land. Sie begegnen sich kaum.',
+      'Die F1-Hybriden zweier Pflanzenarten sind gesund und fruchtbar. Ihre Nachkommen (F2) und Rückkreuzungen sind jedoch lebensschwach oder unfruchtbar.',
+      'Zwei nah verwandte Kiefernarten wachsen nebeneinander. Die eine setzt im Februar Pollen frei, die andere erst im April.',
+      'Zwei Froscharten laichen im selben Teich. Die Eizellen werden befruchtet, die Hybridembryonen entwickeln sich aber nicht richtig und sterben früh ab.',
+      'Männchen zweier Leuchtkäferarten senden artspezifische Blinksignale. Die Weibchen reagieren nur auf das Signal der eigenen Art.'];
+    return `<div class="task"><div class="q">a) <span class="op">Ordne</span> jedes Beispiel dem passenden Isolationsmechanismus zu. Jeder Mechanismus kommt genau einmal vor.</div>
+      ${ex.map((e,i)=>`<div class="pair" style="grid-template-columns:1fr 200px"><span><b>${i+1}.</b> ${e}</span><select data-m="${i}"><option value="">–</option>${mech.map(([v,t])=>`<option value="${v}">${t}</option>`).join('')}</select></div>`).join('')}</div>
+      <div class="task"><div class="q">b) <span class="op">Kreuze</span> an, welche Mechanismen <u>präzygotisch</u> wirken (vor der Bildung der Zygote).</div>
+      <div class="row">${mech.map(([v,t])=>`<label><input type="checkbox" data-p="${v}"> ${t}</label>`).join('')}</div></div>`;
+  },
+  check:root=>[$$('select[data-m]',root).map(s=>s.value).join(','),$$('input[data-p]',root).map(c=>c.checked?1:0).join('')],
+  parts:['Teil a','Teil b'],
+  hints:['Frage bei jedem Beispiel: Kommt es überhaupt zur Paarung bzw. Befruchtung? Wenn ja: Entwickelt sich die Zygote, lebt der Hybrid, ist er fruchtbar?','Präzygotisch heißt „vor der Zygote“: Dazu zählen Ort, Zeit, Verhalten und Körperbau. Die drei Hybrid-Mechanismen wirken erst danach.'],
+  merke:'<b>Präzygotisch</b> (verhindern die Zygotenbildung): Habitat-, zeitliche, Verhaltens- und mechanische Isolation. <b>Postzygotisch</b> (Hybride benachteiligt): Hybridsterblichkeit, Hybridsterilität, Hybridzusammenbruch.'
+},
+{ id:'s5', title:'Station 5: Finkenlabor', afb:[2], mins:6, letter:'N',
+  story:'Im Finkenlabor hat der Server die Daten der Darwinfinken überschrieben. Der Rechner prüft, ob ihr die Voraussetzungen für eine adaptive Radiation kennt. Lest M3 und löst die Aufgaben.',
+  material:`<details class="mat" open><summary>📄 M3 · Adaptive Radiation</summary>
+    <p>Von <b>adaptiver Radiation</b> spricht man, wenn sich aus einer Stammart in kurzer Zeit viele neue Arten entwickeln, die an unterschiedliche <b>ökologische Nischen</b> angepasst sind. Voraussetzung ist meist, dass eine Art einen neuen Lebensraum besiedelt (z. B. Inseln, Seen), in dem viele Nischen noch <b>frei</b> sind und wenige Konkurrenten leben. Die Besiedler müssen genug <b>genetische Variabilität</b> mitbringen, auf die Selektion wirken kann. Unterschiedliche Umweltbedingungen und Nahrungsangebote erzeugen verschiedene <b>Selektionsdrücke</b>. Räumliche oder ökologische <b>Isolation</b> trennt die Genpools.</p>
+    <p><b>Beispiel Darwinfinken:</b> Auf den Galápagosinseln leben etwa 15 Finkenarten, die vermutlich von wenigen Besiedlern vom Festland abstammen. Sie unterscheiden sich vor allem in der Schnabelform und der Nahrung: Samenfresser haben kurze, kräftige Schnäbel, Insektenfresser dünne Schnäbel, Arten, die Kakteenblüten und -früchte nutzen, lange Schnäbel.</p>
+    <p><b>Beispiel Buntbarsche:</b> Im Viktoriasee entstanden innerhalb geologisch kurzer Zeit mehrere hundert Buntbarscharten, die auf Algen, Schnecken, Plankton oder andere Fische spezialisiert sind.</p>
+  </details>`,
+  body:()=>{
+    const st=['Die neuen Lebensräume sind bereits von vielen konkurrenzstarken Arten besetzt.',
+      'Die Besiedler bringen genetische Variabilität mit, auf die Selektion wirken kann.',
+      'Im neuen Lebensraum gibt es freie ökologische Nischen mit wenig Konkurrenz.',
+      'Individuen erwerben durch häufigen Gebrauch größere Schnäbel und vererben diese Eigenschaft.',
+      'Unterschiedliche Umweltbedingungen und Nahrungsquellen erzeugen unterschiedliche Selektionsdrücke.',
+      'Alle besiedelten Lebensräume müssen identische Umweltbedingungen haben.',
+      'Räumliche oder ökologische Isolation trennt die Genpools der Teilpopulationen.',
+      'Die Stammpopulation muss bereits aus mehreren Arten bestehen.'];
+    return `<div class="task"><div class="q"><span class="op">Wähle</span> die <b>vier</b> Aussagen, die zutreffende Voraussetzungen oder Bedingungen einer adaptiven Radiation beschreiben.</div>
+      ${st.map((s,i)=>`<label style="display:block;padding:5px 0"><input type="checkbox" data-s="${i}"> ${s}</label>`).join('')}</div>`;
+  },
+  check:root=>[$$('input[data-s]',root).map(c=>c.checked?1:0).join('')],
+  parts:['Aussagen'],
+  hints:['Vier Aussagen sind richtig. Zwei falsche Aussagen verwechseln Vorgänge: Eine beschreibt die Vererbung erworbener Eigenschaften (Lamarck), eine verlangt gleiche Umweltbedingungen.','Lies M3 noch einmal: Dort stehen die vier Voraussetzungen fast wörtlich (freie Nischen, Variabilität, Selektionsdrücke, Isolation).'],
+  merke:'<b>Adaptive Radiation</b> braucht: <b>freie Nischen</b>, <b>genetische Variabilität</b>, <b>unterschiedliche Selektionsdrücke</b> und <b>Isolation</b>. Anpassungen entstehen durch Selektion zufälliger Variation, nicht durch Gebrauch und Vererbung erworbener Merkmale.'
+},
+{ id:'s6', title:'Station 6: Kreuzungsprotokoll', afb:[2,3], mins:6, letter:'I',
+  story:'Letzte Schleuse: Das Protokoll eines Kreuzungsversuchs mit drei Käferpopulationen X, Y und Z von drei Inseln ist erhalten. Wertet es aus und öffnet den Hauptrechner.',
+  body:()=>`<div class="task"><div class="q">Kreuzungsversuch im Labor mit Käferpopulationen von drei Inseln (Mittelwerte aus je 100 Paarungen):</div>
+    <table class="data"><tr><th>Kreuzung</th><th>Eier befruchtet (%)</th><th>Nachkommen lebensfähig (%)</th><th>davon fruchtbar (%)</th></tr>
+    <tr><td>X × X</td><td>92</td><td>90</td><td>95</td></tr>
+    <tr><td>Z × Z</td><td>90</td><td>88</td><td>94</td></tr>
+    <tr><td>X × Y</td><td>90</td><td>86</td><td>93</td></tr>
+    <tr><td>X × Z</td><td>88</td><td>7</td><td>0</td></tr></table></div>
+    <div class="task"><div class="q">a) <span class="op">Beurteile</span> anhand der Daten nach dem biologischen Artbegriff, welche Populationen zu einer Art gehören.</div>
+    ${radios('t6a',[['a','X, Y und Z gehören zu einer Art, weil sich alle Populationen paaren.'],['b','X und Y gehören zu einer Art, Z ist eine eigene Art.'],['c','X und Z gehören zu einer Art, Y ist eine eigene Art.']])}</div>
+    <div class="task"><div class="q">b) <span class="op">Bestimme</span> den Isolationsmechanismus zwischen X und Z.</div>
+    ${radios('t6b',[['a','Präzygotische Isolation, weil die Paarung gar nicht erst zustande kommt.'],['b','Mechanische Isolation, weil die Geschlechtsorgane nicht zusammenpassen.'],['c','Postzygotische Isolation: Die Eier werden befruchtet, die Hybriden sind aber kaum lebensfähig und unfruchtbar (Hybridsterblichkeit und Hybridsterilität).']])}</div>`,
+  check:root=>[rad(root,'t6a'),rad(root,'t6b')],
+  parts:['Teil a','Teil b'],
+  lab:[{id:'s6l',afb:3,prompt:'<span class="op">Erkläre</span>, wie Population Z durch allopatrische Artbildung entstanden sein kann. <span class="op">Beurteile</span> außerdem die Aussage: „Z sieht X zum Verwechseln ähnlich, also können es keine verschiedenen Arten sein.“',
+    model:'Eine Ausgangspopulation wurde vermutlich durch eine geografische Barriere (z. B. das Meer zwischen Inseln) getrennt. Dadurch fand kein Genfluss mehr statt. In den getrennten Genpools veränderten Mutation, Rekombination, Gendrift und unterschiedliche Selektion die Allelhäufigkeiten. Dabei entwickelte sich reproduktive Isolation (Hybridsterblichkeit und Hybridsterilität). Die Aussage ist falsch: Der biologische Artbegriff beruht nicht auf dem Aussehen, sondern auf Fortpflanzung und fruchtbaren Nachkommen bzw. dem Genfluss. Es gibt auch äußerlich sehr ähnliche Arten (Zwillingsarten). Entscheidend ist hier, dass aus der Kreuzung X × Z keine fruchtbaren Nachkommen hervorgehen.'}],
+  hints:['Vergleiche die Zeile X × Y mit X × Z. Wo entstehen zahlreiche lebensfähige und fruchtbare Nachkommen, wo nicht?','Bei X × Z werden 88 % der Eier befruchtet. Es kommt also zur Zygotenbildung. Wann wirkt der Mechanismus demnach: vor oder nach der Zygote?'],
+  merke:'Nach dem <b>biologischen Artbegriff</b> entscheidet die Fähigkeit, <b>fruchtbare Nachkommen</b> zu zeugen. Befruchtung ohne lebensfähige, fruchtbare Hybriden weist auf <b>postzygotische</b> Isolation hin. Das Aussehen allein entscheidet nicht.'
+}
+];
+const HASH={s1:[2913155386],s2:[3819696979,177672],s3:[2090715309,177671],s4:[674074675,857513433],s5:[4189971817],s6:[177671,177672],fin:[81002958],pw:[230876702]};
+const ORDER=ROOMS.map(r=>r.id);
+
+/* ---------- Ansichten ---------- */
+const app=$('#app');
+function fmt(sec){const s=Math.abs(Math.round(sec));return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0')}
+function elapsedSec(){if(!S.started)return 0;return ((S.finished||Date.now())-S.started)/1000}
+function penaltySec(){return Object.values(S.hints).reduce((a,b)=>a+b,0)*HINT_PENALTY_MIN*60}
+function tick(){
+  const left=TOTAL_MIN*60-elapsedSec()-penaltySec();const t=$('#timer');
+  t.textContent=left>=0?fmt(left):'+'+fmt(left);
+  t.className='timer'+(left<0?' over':left<600?' low':'');
+}
+setInterval(()=>{if(S.started)tick()},1000);
+function hud(){
+  $('#hud').hidden=S.view==='start';
+  $('#slots').innerHTML=ROOMS.map(r=>`<div class="slot ${S.solved[r.id]?'got':''}" title="${r.title}">${S.solved[r.id]?r.letter:'?'}</div>`).join('');
+  $('#team').textContent=S.team?('Team: '+S.team):'';tick();
+}
+$('#mapbtn').onclick=()=>go('map');
+function go(view,room){if(simStop){simStop();simStop=null}S.view=view;S.room=room||null;save();render();window.scrollTo(0,0)}
+function isUnlocked(id){const i=ORDER.indexOf(id);return i===0||!!S.solved[ORDER[i-1]]}
+function nSolved(){return ORDER.filter(id=>S.solved[id]).length}
+
+function render(){
+  hud();
+  if(S.view==='start')return viewStart();
+  if(S.view==='map')return viewMap();
+  if(S.view==='room')return viewRoom(ROOMS.find(r=>r.id===S.room));
+  if(S.view==='final')return viewFinal();
+  if(S.view==='win')return viewWin();
+}
+function viewStart(){
+  app.innerHTML=`<div class="wrap"><div class="hero"><div class="glow">FORSCHUNGSSTATION GALÁPAGOS · BIOLOGIE SEK II</div>
+    <h1>Escape Lab: Artbildung</h1><div class="alarm">⚠ ALARM: Artendatenbank gesperrt</div></div>
+    <div class="card story">Ein Stromausfall hat auf der Forschungsstation die Artendatenbank der Galápagosinseln verriegelt. Alle Türen sind zu, und die Notstromversorgung reicht nur noch kurz. Ohne Neustart gehen die Messdaten über die Entstehung der Arten verloren.<br><br>
+    Ihr seid das Rettungsteam. Jede geöffnete Tür liefert einen Buchstaben. Die sechs Buchstaben ergeben, richtig angeordnet, das Codewort für den Neustart.<br><br>
+    <b>Ihr habt 30 Minuten</b>, bevor die Notstromversorgung erlischt.</div>
+    <div class="card"><h3>So funktioniert's</h3>
+    <ul><li>6 Stationen, die nacheinander freigeschaltet werden, dann der Hauptrechner.</li>
+    <li>Gelbe Kästen sind <b>Informationsmaterial</b> (M1 bis M3). Lest sie gründlich, die Lösungen stehen darin.</li>
+    <li>Der lila Kasten ist ein <b>Laborbuch-Eintrag</b>: eigene Antwort in ganzen Sätzen. Erst nach dem Vergleich mit der Musterlösung öffnet sich die Tür.</li>
+    <li>Tipps helfen weiter, kosten aber je <b>1 Minute</b>. Nach drei Fehlversuchen sperrt die Tür für 30 Sekunden.</li>
+    <li>Kennzeichnung der Aufgaben: <span class="tag afb1">AFB I</span> Reproduktion <span class="tag afb2">AFB II</span> Reorganisation und Transfer <span class="tag afb3">AFB III</span> Reflexion und Problemlösung</li></ul>
+    <div class="row" style="margin-top:12px"><input type="text" id="teamIn" placeholder="Teamname" value="${esc(S.team)}" maxlength="40">
+    ${S.unlocked?'':'<input type="password" id="pwIn" placeholder="Startpasswort" autocomplete="off" maxlength="40">'}
+    <button class="btn" id="go">${S.started?'Weiterspielen':'Mission starten'}</button>
+    ${S.started?'<button class="btn ghost small" id="reset">Neues Spiel</button>':''}</div>
+    <div class="feedback" id="pwfb"></div></div></div>`;
+  const start=()=>{
+    if(!S.unlocked){
+      if(h($('#pwIn').value.trim())!==HASH.pw[0]){const f=$('#pwfb');f.className='feedback bad';f.textContent='❌ Falsches Passwort. Das Startpasswort bekommt ihr von eurer Lehrkraft.';return}
+      S.unlocked=true;
+    }
+    S.team=$('#teamIn').value.trim()||'Rettungsteam';if(!S.started)S.started=Date.now();go(S.finished?'win':'map')};
+  $('#go').onclick=start;
+  const pwi=$('#pwIn');if(pwi)pwi.onkeydown=e=>{if(e.key==='Enter')start()};
+  const r=$('#reset');if(r)r.onclick=()=>{if(confirm('Wirklich alles zurücksetzen? Fortschritt und Laborbuch gehen verloren.')){S=fresh();save();render()}};
+}
+function viewMap(){
+  const n=nSolved();const nextId=ORDER.find(id=>!S.solved[id]);
+  const tile=r=>{const i=ORDER.indexOf(r.id)+1,ok=S.solved[r.id],un=isUnlocked(r.id);
+    return `<button class="tile ${ok?'done':un?(r.id===nextId?'next':''):'locked'}" ${un?'':'disabled'} data-room="${r.id}">
+      <span class="st">${ok?'✅':un?'🔓':'🔒'}</span><div class="no">STATION ${String(i).padStart(2,'0')} · ca. ${r.mins} min</div><div class="t">${r.title.split(': ')[1]}</div>
+      <div>${r.afb.map(a=>`<span class="tag afb${a}">AFB ${['','I','II','III'][a]}</span>`).join('')}</div></button>`};
+  app.innerHTML=`<div class="wrap"><div class="card"><div class="row"><h2 style="margin:0;flex:1">Stationskarte</h2><span class="mini">${n} von ${ROOMS.length} Türen geöffnet</span></div>
+    <div class="progress" style="margin-top:10px"><div style="width:${n/ROOMS.length*100}%"></div></div></div>
+    <div class="sector"><div class="grid" style="margin-top:10px">${ROOMS.map(tile).join('')}</div></div>
+    <div class="sector"><div class="grid"><button class="tile ${n===ROOMS.length?'next':'locked'}" ${n===ROOMS.length?'':'disabled'} id="fin"><span class="st">${n===ROOMS.length?'🔓':'🔒'}</span><div class="no">HAUPTRECHNER</div><div class="t">Neustart der Artendatenbank</div><div class="mini">Benötigt alle 6 Buchstaben</div></button></div></div>
+    <p class="mini" style="margin-top:24px">Lehrkraft: Fortschritt wird im Browser gespeichert. „Neues Spiel“ auf der Startseite setzt alles zurück. <button class="btn ghost small" id="toStart">Startseite</button> <button class="btn ghost small" id="printLab">Laborbuch drucken</button></p></div>`;
+  $$('[data-room]').forEach(b=>b.onclick=()=>go('room',b.dataset.room));
+  const f=$('#fin');if(f&&!f.disabled)f.onclick=()=>go('final');
+  $('#toStart').onclick=()=>go('start');$('#printLab').onclick=printLab;
+}
+
+function viewRoom(r){
+  const solved=!!S.solved[r.id];const hu=S.hints[r.id]||0;
+  app.innerHTML=`<div class="wrap"><div class="card" id="roomcard">
+    <div class="room-h"><div><div class="mini">STATION ${String(ORDER.indexOf(r.id)+1).padStart(2,'0')} · ca. ${r.mins} min</div><h2>${r.title}</h2></div>
+    <div>${r.afb.map(a=>`<span class="tag afb${a}">AFB ${['','I','II','III'][a]}</span>`).join('')}</div></div>
+    <div class="story">${r.story}</div>
+    ${r.material||''}
+    <div id="rbody">${r.body()}</div>
+    ${(r.lab||[]).map(labHTML).join('')}
+    <div class="door">
+      ${solved?`<span class="feedback ok">✅ Tür geöffnet · Buchstabe <b>${r.letter}</b></span><span style="flex:1"></span><button class="btn" id="next">Weiter</button>`:
+      `<button class="btn" id="open">🔐 Tür öffnen</button>
+      <button class="btn hint" id="hint" ${hu>=r.hints.length?'disabled':''}>💡 Tipp ${Math.min(hu+1,r.hints.length)}/${r.hints.length} (−1 min)</button>
+      <span style="flex:1"></span><button class="btn ghost small" id="back">Zur Karte</button>`}
+    </div>
+    <div class="feedback" id="fb"></div>
+    <div id="hints">${r.hints.slice(0,hu).map((t,i)=>`<div class="hintbox"><b>Tipp ${i+1}:</b> ${t}</div>`).join('')}</div>
+    ${solved?`<div class="merke"><b>Merke:</b> ${r.merke}</div>`:''}
+  </div></div>`;
+  const root=$('#roomcard');
+  if(r.init)r.init(root);
+  wireLab(root);
+  if(solved){
+    if(r.onSolved)setTimeout(()=>r.onSolved(root),300);
+    const idx=ORDER.indexOf(r.id);$('#next').onclick=()=>idx<ORDER.length-1?go('room',ORDER[idx+1]):go('final');return;
+  }
+  $('#back').onclick=()=>go('map');
+  $('#hint').onclick=()=>{if((S.hints[r.id]||0)<r.hints.length){S.hints[r.id]=(S.hints[r.id]||0)+1;save();const i=S.hints[r.id];
+    $('#hints').insertAdjacentHTML('beforeend',`<div class="hintbox"><b>Tipp ${i}:</b> ${r.hints[i-1]}</div>`);
+    const b=$('#hint');if(i>=r.hints.length)b.disabled=true;b.textContent=`💡 Tipp ${Math.min(i+1,r.hints.length)}/${r.hints.length} (−1 min)`;hud()}};
+  $('#open').onclick=()=>tryOpen(r,root);
+}
+function tryOpen(r,root){
+  const fb=$('#fb');fb.className='feedback bad';
+  const lock=(S.lockUntil[r.id]||0)-Date.now();
+  if(lock>0){fb.textContent=`🔒 Sicherheitssperre aktiv: noch ${Math.ceil(lock/1000)} Sekunden. Nutzt die Zeit, um eure Antworten zu prüfen.`;return}
+  const missing=(r.lab||[]).filter(l=>!S.compared[l.id]);
+  if(missing.length){fb.textContent='📓 Das Laborbuch ist noch nicht vollständig: Schreibt euren Eintrag und vergleicht ihn mit der Musterlösung.';$('[data-lab]',root).scrollIntoView({behavior:'smooth',block:'center'});return}
+  const ans=r.check(root);const hs=HASH[r.id];
+  const ok=ans.map((a,i)=>h(a)===hs[i]);
+  if(ok.every(Boolean)){S.solved[r.id]=Date.now();S.fails[r.id]=0;save();hud();celebrate(r);return}
+  S.fails[r.id]=(S.fails[r.id]||0)+1;
+  if(S.fails[r.id]%3===0){S.lockUntil[r.id]=Date.now()+30000}
+  save();
+  const card=$('#roomcard');card.classList.remove('shake');void card.offsetWidth;card.classList.add('shake');
+  fb.innerHTML='❌ Die Tür bleibt verschlossen. '+(r.parts.length>1?r.parts.map((p,i)=>`${p}: ${ok[i]?'✔':'✘'}`).join(' · '):'Prüft eure Antworten noch einmal.')+(S.fails[r.id]%3===0?' <br>🔒 Drei Fehlversuche: Die Tür sperrt für 30 Sekunden.':'');
+}
+function celebrate(r){
+  const idx=ORDER.indexOf(r.id);const last=idx===ORDER.length-1;
+  const m=document.createElement('div');m.className='modal';
+  m.innerHTML=`<div class="box"><div class="mini">TÜR GEÖFFNET</div><h2>${r.title.split(': ')[1]} gelöst!</h2>
+    <div>Neuer Code-Buchstabe:</div><div class="bigletter">${r.letter}</div>
+    <div class="merke"><b>Merke:</b> ${r.merke}</div>
+    <button class="btn" id="mnext">${last?'Zum Hauptrechner':'Nächste Station'}</button> <button class="btn ghost" id="mmap">Karte</button></div>`;
+  document.body.appendChild(m);
+  confetti();
+  $('#mnext',m).onclick=()=>{m.remove();last?go('final'):go('room',ORDER[idx+1])};
+  $('#mmap',m).onclick=()=>{m.remove();go('map')};
+}
+
+function confetti(){
+  const c=document.createElement('canvas');c.style.cssText='position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:60;background:transparent;border:0';
+  c.width=innerWidth;c.height=innerHeight;document.body.appendChild(c);const x=c.getContext('2d');
+  const cols=['#4ade80','#22d3ee','#a855f7','#fbbf24','#f472b6'];
+  const P=Array.from({length:140},()=>({x:innerWidth/2,y:innerHeight/2,vx:(Math.random()-.5)*14,vy:Math.random()*-14-2,c:cols[Math.floor(Math.random()*5)],s:Math.random()*6+3}));
+  let n=0;const f=()=>{x.clearRect(0,0,c.width,c.height);P.forEach(p=>{p.vy+=.35;p.x+=p.vx;p.y+=p.vy;x.fillStyle=p.c;x.fillRect(p.x,p.y,p.s,p.s*.6)});if(++n<110)requestAnimationFrame(f);else c.remove()};f();setTimeout(()=>c.remove(),2500);
+}
+function viewFinal(){
+  if(nSolved()<ROOMS.length)return go('map');
+  app.innerHTML=`<div class="wrap"><div class="card"><div class="mini">HAUPTRECHNER</div><h2>Neustart der Artendatenbank</h2>
+    <div class="story">Der Hauptrechner verlangt das Codewort. Eure sechs Buchstaben ergeben, richtig angeordnet, die vom Meer umgebenen Landstücke, auf denen Darwins Finken leben (Mehrzahl). Sie sind das Paradebeispiel für allopatrische Artbildung und adaptive Radiation.</div>
+    <div class="row" style="justify-content:center;margin:20px 0">${ROOMS.map(r=>`<div class="slot got" style="width:44px;height:52px;font-size:24px">${r.letter}</div>`).join('')}</div>
+    <div class="row" style="justify-content:center"><input type="text" id="code" placeholder="Codewort" style="font-family:var(--mono);font-size:22px;text-transform:uppercase;letter-spacing:.2em;width:280px">
+    <button class="btn" id="fgo">⚡ Datenbank neu starten</button></div><div class="feedback" id="ffb" style="text-align:center"></div></div></div>`;
+  const fire=()=>{if(h(normTxt($('#code').value))===HASH.fin[0]){S.finished=Date.now();save();confetti();go('win')}else{const f=$('#ffb');f.className='feedback bad';f.textContent='❌ Zugriff verweigert. Tipp: Das Wort hat 6 Buchstaben und beginnt mit I.'}};
+  $('#fgo').onclick=fire;$('#code').onkeydown=e=>{if(e.key==='Enter')fire()};
+}
+function viewWin(){
+  const used=elapsedSec(),pen=penaltySec(),hints=Object.values(S.hints).reduce((a,b)=>a+b,0);
+  const left=TOTAL_MIN*60-used-pen;
+  app.innerHTML=`<div class="wrap"><div class="card cert"><div class="seal">🐦</div><div class="glow mini">MISSION ERFÜLLT</div>
+    <h1 style="background:linear-gradient(90deg,#4ade80,#22d3ee);-webkit-background-clip:text;background-clip:text;color:transparent">Die Datenbank läuft wieder!</h1>
+    <p>Die Messdaten sind gerettet. Ihr habt allopatrische und sympatrische Artbildung unterschieden, Isolationsmechanismen zugeordnet, die Voraussetzungen der adaptiven Radiation geklärt und beide Artbegriffe angewendet.</p>
+    <div class="card" style="display:inline-block;text-align:left"><b>Team:</b> ${esc(S.team)}<br><b>Bearbeitungszeit:</b> ${fmt(used)} min<br><b>Genutzte Tipps:</b> ${hints} (= ${hints} min Zuschlag)<br>
+    <b>Ergebnis:</b> ${left>=0?`Gerettet mit ${fmt(left)} min Reserve 🏆`:`Gerettet, ${fmt(-left)} min nach Ablauf der Frist`}</div>
+    <div class="row" style="justify-content:center"><button class="btn" id="printCert">Urkunde und Laborbuch drucken</button><button class="btn ghost" id="toMap">Zur Karte</button></div></div></div>`;
+  $('#printCert').onclick=()=>printLab(true);$('#toMap').onclick=()=>go('map');
+}
+
+function printLab(withCert){
+  const labs=ROOMS.flatMap(r=>(r.lab||[]).map(l=>({r,l})));
+  const tmp=document.createElement('div');
+  $('#print').innerHTML=`${withCert===true&&S.finished?`<h1>Urkunde: Escape Lab Artbildung</h1><p>Das Team <b>${esc(S.team)}</b> hat die Artendatenbank der Forschungsstation gerettet.<br>Bearbeitungszeit: ${fmt(elapsedSec())} min, genutzte Tipps: ${Object.values(S.hints).reduce((a,b)=>a+b,0)}</p><hr>`:''}
+    <h2>Laborbuch · Team ${esc(S.team||'–')}</h2>
+    ${labs.map(({r,l})=>{tmp.innerHTML=l.prompt;return `<h3>${r.title}</h3><p><i>${esc(tmp.textContent)}</i></p><div class="pbox">${esc(S.notes[l.id]||'(noch kein Eintrag)')}</div>`}).join('')}`;
+  window.print();
+}
+render();
+</script>
+</body>
+</html>
